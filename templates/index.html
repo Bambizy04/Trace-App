@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRACE - Lost and Found</title>
+    <!-- Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-magnifying-glass-location"></i> TRACE
+        </div>
+        <ul class="nav-links">
+            <li><a href="#" onclick="showPage('home')">Home</a></li>
+            <li><a href="#" onclick="showPage('report')">Report Item</a></li>
+            <li><a href="#" onclick="showPage('search')">Search Matches</a></li>
+            <li id="nav-claims" style="display:none;"><a href="#" onclick="showPage('claims')">My Claims</a></li>
+            <li id="nav-admin" style="display:none;"><a href="#" onclick="showPage('admin')">Admin</a></li>
+        </ul>
+        <div class="auth-buttons" id="auth-buttons">
+            <button class="btn-outline" onclick="showModal('loginModal')">Login</button>
+            <button class="btn-primary" onclick="showModal('registerModal')">Sign Up</button>
+        </div>
+        <div class="user-profile" id="user-profile" style="display:none;">
+            <span id="welcome-msg"></span>
+            <button class="btn-outline" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main id="main-content">
+        <!-- Views will be dynamically loaded here by JS -->
+    </main>
+
+    <!-- Modals Overlay -->
+    <div class="modal-overlay" id="modal-overlay"></div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-header">
+            <h2>Welcome Back</h2>
+            <button class="close-btn" onclick="closeModal('loginModal')">&times;</button>
+        </div>
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="login-username" required>
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="login-password" required>
+            </div>
+            <button type="submit" class="btn-primary w-100">Login</button>
+        </form>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal" id="registerModal">
+        <div class="modal-header">
+            <h2>Join TRACE</h2>
+            <button class="close-btn" onclick="closeModal('registerModal')">&times;</button>
+        </div>
+        <form id="registerForm" onsubmit="handleRegister(event)">
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="reg-username" required>
+            </div>
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="reg-email" required>
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="reg-password" required>
+            </div>
+            <button type="submit" class="btn-primary w-100">Sign Up</button>
+        </form>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Templates for different views (hidden by default) -->
+    <template id="tpl-home">
+        <div class="hero">
+            <div class="hero-content text-focus-in">
+                <h1>Lost Something?<br><span class="highlight">Find it with TRACE.</span></h1>
+                <p>The smartest and fastest way to reunite with your lost belongings on campus using intelligent text and image matching.</p>
+                <div class="hero-actions">
+                    <button class="btn-primary btn-large" onclick="showPage('report')">Report Lost Item</button>
+                    <button class="btn-outline btn-large has-icon" onclick="showPage('report')"><i class="fa-solid fa-plus"></i> Found an Item</button>
+                </div>
+            </div>
+            <div class="hero-image slide-in-right">
+                <div class="glass-card decorative-card">
+                    <i class="fa-solid fa-mobile-screen-button floating-icon" style="color: #d4a5ff;"></i>
+                    <i class="fa-solid fa-wallet floating-icon" style="color: #e5b3fe; animation-delay: 1s;"></i>
+                    <i class="fa-solid fa-keys floating-icon" style="color: #b57df3; animation-delay: 2s;"></i>
+                    <h3>Intelligent Matching</h3>
+                    <p>Our system uses AI to match your descriptions and images instantly.</p>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="tpl-report">
+        <div class="form-container fade-in">
+            <h2 class="section-title">Report an Item</h2>
+            <div class="toggle-container">
+                <button class="toggle-btn active" id="btn-lost" onclick="setReportType('lost')">I Lost Something</button>
+                <button class="toggle-btn" id="btn-found" onclick="setReportType('found')">I Found Something</button>
+            </div>
+            
+            <form id="reportForm" onsubmit="submitReport(event)" class="glass-form mt-4">
+                <input type="hidden" id="report-type" value="lost">
+                <div class="input-group">
+                    <label>Item Name</label>
+                    <input type="text" id="item-name" placeholder="e.g. Blue Hydroflask" required>
+                </div>
+                <div class="input-group">
+                    <label>Detailed Description</label>
+                    <textarea id="item-desc" rows="4" placeholder="Describe the item, any unique marks..." required></textarea>
+                </div>
+                <div class="row">
+                    <div class="input-group half">
+                        <label>Location</label>
+                        <input type="text" id="item-loc" placeholder="e.g. Library 2nd floor" required>
+                    </div>
+                    <div class="input-group half">
+                        <label>Date</label>
+                        <input type="date" id="item-date" required>
+                    </div>
+                </div>
+                <div class="input-group file-upload">
+                    <label>Upload Image <small>(Helps with AI Matching)</small></label>
+                    <div class="file-drop-area" id="file-drop-area">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span class="file-msg">Drag & drop or click to upload</span>
+                        <input type="file" id="item-image" accept="image/*" onchange="previewImage(this)">
+                    </div>
+                    <img id="image-preview" src="" alt="Preview" style="display:none; max-width: 100%; margin-top: 10px; border-radius: 8px;">
+                </div>
+                <button type="submit" class="btn-primary w-100 btn-large mt-4" id="submit-report-btn">Submit Report</button>
+            </form>
+        </div>
+    </template>
+
+    <template id="tpl-search">
+        <div class="page-container fade-in">
+            <h2 class="section-title">Find Matches</h2>
+            <p class="subtitle">Select one of your reported lost items to check for intelligent matches.</p>
+            
+            <div class="my-lost-items-grid" id="lost-items-grid">
+                <!-- Dynamically populated -->
+                <div class="loader-spinner"></div>
+            </div>
+
+            <div id="matches-section" class="mt-5" style="display: none;">
+                <h3>Potential Matches</h3>
+                <div class="matches-grid" id="matches-grid">
+                    <!-- Matches appear here -->
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="tpl-admin">
+        <div class="page-container fade-in">
+            <h2 class="section-title"><i class="fa-solid fa-shield-halved"></i> Admin Dashboard</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Users</h3>
+                    <div class="stat-value" id="stat-users">--</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Lost Items</h3>
+                    <div class="stat-value" id="stat-lost">--</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Found Items</h3>
+                    <div class="stat-value" id="stat-found">--</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Pending Claims</h3>
+                    <div class="stat-value" id="stat-claims">--</div>
+                </div>
+            </div>
+
+            <div class="admin-section mt-5">
+                <h3>Pending Claims Review</h3>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Item</th>
+                                <th>Proof Details</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-claims-body">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Claim Modal -->
+    <div class="modal" id="claimModal">
+        <div class="modal-header">
+            <h2>Initiate Claim</h2>
+            <button class="close-btn" onclick="closeModal('claimModal')">&times;</button>
+        </div>
+        <form id="claimForm" onsubmit="submitClaim(event)">
+            <input type="hidden" id="claim-found-id">
+            <p>You are claiming: <strong id="claim-item-name"></strong></p>
+            <div class="input-group mt-3">
+                <label>Proof of Ownership</label>
+                <textarea id="claim-proof" rows="4" placeholder="Describe something only the owner would know, or how you can prove it's yours..." required></textarea>
+            </div>
+            <button type="submit" class="btn-primary w-100 mt-3">Submit Claim Request</button>
+        </form>
+    </div>
+
+    <!-- Review Claim Modal (Admin) -->
+    <div class="modal" id="reviewClaimModal">
+        <div class="modal-header">
+            <h2>Review Claim</h2>
+            <button class="close-btn" onclick="closeModal('reviewClaimModal')">&times;</button>
+        </div>
+        <form id="reviewClaimForm" onsubmit="submitReview(event)">
+            <input type="hidden" id="review-claim-id">
+            <div class="input-group">
+                <label>Admin Feedback / Instructions</label>
+                <textarea id="review-feedback" rows="3" placeholder="Where to pick up, or why it was rejected..."></textarea>
+            </div>
+            <div class="row mt-3">
+                <button type="button" class="btn-danger half" onclick="setReviewAction('Reject')">Reject</button>
+                <button type="button" class="btn-success half" onclick="setReviewAction('Approve')">Approve</button>
+            </div>
+            <input type="hidden" id="review-action" value="">
+        </form>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

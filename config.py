@@ -1,0 +1,18 @@
+import os
+
+class Config:
+    # Basic Flask config
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'super-secret-trace-dev-key')
+    
+    # Database configuration
+    import os
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///' + os.path.join(basedir, 'trace_db.sqlite'))
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # JWT authentication configuration
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'jwt-super-secret-key-change-in-prod')
+    
+    # File upload configurations
+    UPLOAD_FOLDER = os.path.join(os.getcwd(), 'static', 'uploads')
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max limit for uploads
