@@ -43,8 +43,13 @@ def create_app(config_class=Config):
     from routes.admin import admin_bp
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
 
+    from routes.matches import matches_bp
+    app.register_blueprint(matches_bp, url_prefix='/api/matches')
+
     return app
 
+# Expose the app instance globally so Vercel can find it
+app = create_app()
+
 if __name__ == '__main__':
-    app = create_app()
     app.run(debug=True, port=8000)

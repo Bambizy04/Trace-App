@@ -248,7 +248,8 @@ main { padding: 2rem 5%; flex-grow: 1; }
 .modal.active, .modal-overlay.active { display: flex; opacity: 1; }
 .modal.active { transform: translate(-50%, -50%) scale(1); }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-.close-btn { background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; }
+.close-btn { position: absolute; top: 1.25rem; right: 1.25rem; background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; transition: color 0.3s ease; }
+.close-btn:hover { color: var(--danger); }
 
 /* Grids and Cards */
 .page-container { max-width: 1000px; margin: 0 auto; }

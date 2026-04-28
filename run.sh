@@ -1,1 +1,1 @@
-python -m flask run -p 8000
+venv/bin/python -m flask run -p 8000

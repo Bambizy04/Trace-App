@@ -1,5 +1,5 @@
 // Base Configuration
-const API_BASE_URL = 'http://localhost:8001/api';
+const API_BASE_URL = '/api';
 let currentToken = localStorage.getItem('trace_token');
 let currentRole = localStorage.getItem('trace_role');
 
@@ -10,6 +10,9 @@ const userProfile = document.getElementById('user-profile');
 const welcomeMsg = document.getElementById('welcome-msg');
 const navClaims = document.getElementById('nav-claims');
 const navAdmin = document.getElementById('nav-admin');
+const navReport = document.getElementById('nav-report');
+const navSearch = document.getElementById('nav-search');
+const navHome = document.getElementById('nav-home');
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
@@ -29,13 +32,19 @@ function showPage(pageId) {
     // Page specific initialization
     if (pageId === 'search') {
         if (!checkAuth()) return;
+        if (currentRole === 'Admin') { showPage('admin'); return; }
         loadMyLostItems();
     } else if (pageId === 'admin') {
         if (!checkAdmin()) return;
         loadAdminStats();
         loadAdminClaims();
+        loadAdminUsers();
     } else if (pageId === 'report') {
         if (!checkAuth()) return;
+        if (currentRole === 'Admin') { showPage('admin'); return; }
+    } else if (pageId === 'claims') {
+        if (!checkAuth()) return;
+        if (currentRole === 'Admin') { showPage('admin'); return; }
     }
 }
 
@@ -46,17 +55,27 @@ function updateNavUI() {
         userProfile.style.display = 'flex';
         // Mock username for display if real isn't saved, or fetch from /me endpoint if added
         welcomeMsg.textContent = `Welcome`;
-        navClaims.style.display = 'block';
         if (currentRole === 'Admin') {
-            navAdmin.style.display = 'block';
+            if (navAdmin) navAdmin.style.display = 'block';
+            if (navClaims) navClaims.style.display = 'none';
+            if (navReport) navReport.style.display = 'none';
+            if (navSearch) navSearch.style.display = 'none';
+            if (navHome) navHome.style.display = 'none';
         } else {
-            navAdmin.style.display = 'none';
+            if (navAdmin) navAdmin.style.display = 'none';
+            if (navClaims) navClaims.style.display = 'block';
+            if (navReport) navReport.style.display = 'block';
+            if (navSearch) navSearch.style.display = 'block';
+            if (navHome) navHome.style.display = 'block';
         }
     } else {
         authButtons.style.display = 'flex';
         userProfile.style.display = 'none';
-        navClaims.style.display = 'none';
-        navAdmin.style.display = 'none';
+        if (navClaims) navClaims.style.display = 'none';
+        if (navAdmin) navAdmin.style.display = 'none';
+        if (navReport) navReport.style.display = 'block';
+        if (navSearch) navSearch.style.display = 'block';
+        if (navHome) navHome.style.display = 'block';
     }
 }
 
@@ -141,7 +160,11 @@ async function handleLogin(e) {
         updateNavUI();
         closeModal('loginModal');
         showToast('Logged in successfully', 'success');
-        showPage('home');
+        if (currentRole === 'Admin') {
+            showPage('admin');
+        } else {
+            showPage('home');
+        }
     } catch (err) {
         showToast(err.message, 'error');
     }
@@ -428,6 +451,36 @@ function openReviewModal(claimId) {
 function setReviewAction(action) {
     document.getElementById('review-action').value = action;
     submitReview();
+}
+
+async function loadAdminUsers() {
+    const tbody = document.getElementById('admin-users-body');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Loading...</td></tr>';
+
+    try {
+        const users = await apiCall('/admin/users');
+        tbody.innerHTML = '';
+
+        if (users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No users found.</td></tr>';
+            return;
+        }
+
+        users.forEach(u => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>#${u.id}</td>
+                <td>${u.username}</td>
+                <td>${u.email}</td>
+                <td><span class="status-badge ${u.role === 'Admin' ? 'status-approved' : 'status-pending'}">${u.role}</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">${err.message}</td></tr>`;
+    }
 }
 
 async function submitReview() {
