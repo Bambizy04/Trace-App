@@ -1,19 +1,32 @@
 import os
-import torch
+try:
+    import torch
+    from sentence_transformers import SentenceTransformer, util
+    import torchvision.models as models
+    import torchvision.transforms as transforms
+    ML_AVAILABLE = True
+except ImportError:
+    ML_AVAILABLE = False
+
 from PIL import Image
-from sentence_transformers import SentenceTransformer, util
-import torchvision.models as models
-import torchvision.transforms as transforms
 
 # Define global variables for models
 text_model = None
 image_model = None
 preprocess = None
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+if ML_AVAILABLE:
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+else:
+    device = 'cpu'
 
 def initialize_models():
     """Lazy loads machine learning models only if they aren't loaded yet."""
     global text_model, image_model, preprocess
+    
+    if not ML_AVAILABLE:
+        # print("Machine learning dependencies not available. Matching features are disabled.")
+        return
     
     if text_model is None:
         text_model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -34,6 +47,8 @@ def initialize_models():
 
 def calculate_text_similarity(text1, text2):
     """Calculates cosine similarity between two text strings."""
+    if not ML_AVAILABLE:
+        return 0.0
     initialize_models()
     if not text1 or not text2:
         return 0.0
@@ -44,6 +59,8 @@ def calculate_text_similarity(text1, text2):
 
 def extract_image_features(image_path):
     """Extracts features from an image using pre-trained ResNet50."""
+    if not ML_AVAILABLE:
+        return None
     initialize_models()
     if not image_path or not os.path.exists(image_path):
         return None
