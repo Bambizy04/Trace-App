@@ -26,7 +26,7 @@ def handle_image_upload(file):
 @items_bp.route('/lost', methods=['POST'])
 @jwt_required()
 def report_lost_item():
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     
     # Handle both multipart/form-data (with image) and application/json
     if request.content_type.startswith('multipart/form-data'):
@@ -85,7 +85,7 @@ def get_lost_items():
 @items_bp.route('/found', methods=['POST'])
 @jwt_required()
 def report_found_item():
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     
     if request.content_type.startswith('multipart/form-data'):
         data = request.form
@@ -139,3 +139,40 @@ def get_found_items():
             "user": item.user.username
         })
     return jsonify(result), 200
+
+@items_bp.route('/my_lost', methods=['GET'])
+@jwt_required()
+def get_my_lost_items():
+    user_id = int(get_jwt_identity())
+    items = LostItem.query.filter_by(user_id=user_id).all()
+    result = []
+    for item in items:
+        result.append({
+            "id": item.id,
+            "name": item.name,
+            "description": item.description,
+            "location": item.location,
+            "date_lost": item.date_lost.strftime('%Y-%m-%d'),
+            "image_path": item.image_path,
+            "status": item.status
+        })
+    return jsonify(result), 200
+
+@items_bp.route('/my_found', methods=['GET'])
+@jwt_required()
+def get_my_found_items():
+    user_id = int(get_jwt_identity())
+    items = FoundItem.query.filter_by(user_id=user_id).all()
+    result = []
+    for item in items:
+        result.append({
+            "id": item.id,
+            "name": item.name,
+            "description": item.description,
+            "location": item.location,
+            "date_found": item.date_found.strftime('%Y-%m-%d'),
+            "image_path": item.image_path,
+            "status": item.status
+        })
+    return jsonify(result), 200
+

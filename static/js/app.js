@@ -34,6 +34,8 @@ function showPage(pageId) {
         if (!checkAuth()) return;
         if (currentRole === 'Admin') { showPage('admin'); return; }
         loadMyLostItems();
+        loadMyFoundItems();
+        loadGeneralLostItems();
     } else if (pageId === 'admin') {
         if (!checkAdmin()) return;
         loadAdminStats();
@@ -272,23 +274,38 @@ async function submitReport(e) {
 }
 
 // Matching & Search
+function switchSearchTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.search-tab-content').forEach(tab => tab.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+    // Show selected tab
+    document.getElementById(`tab-${tabName}`).style.display = 'block';
+    // Find button and make active
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => {
+        if (btn.textContent.toLowerCase().includes(tabName.replace('-', ' '))) {
+            btn.classList.add('active');
+        }
+    });
+
+    // Special case for buttons that don't match text perfectly
+    if (tabName === 'my-lost') buttons[0].classList.add('active');
+    if (tabName === 'my-found') buttons[1].classList.add('active');
+    if (tabName === 'general') buttons[2].classList.add('active');
+}
+
 async function loadMyLostItems() {
     const grid = document.getElementById('lost-items-grid');
+    if (!grid) return;
     grid.innerHTML = '<div class="loader-spinner"></div>';
 
     try {
-        // Here we just fetch all lost items, ideally we should have a /my_lost endpoint
-        // For now, let's pretend we have it or filter client-side (assuming the API returns user info)
-        // Since we didn't explicitly make a /my_lost endpoint in items.py, we'll fetch all and filter client side
-        // to save time, or we can just show all lost items for the demo
-        const data = await apiCall('/items/lost');
-
-        // Let's just show all for demo purposes, or if user is logged in, their username 
-        // We'll just display them all as clickable cards
+        const data = await apiCall('/items/my_lost');
         grid.innerHTML = '';
 
         if (data.length === 0) {
-            grid.innerHTML = '<p>No lost items reported yet.</p>';
+            grid.innerHTML = '<p style="grid-column:1/-1; text-align:center;">You haven\'t reported any lost items yet.</p>';
             return;
         }
 
@@ -306,6 +323,7 @@ async function loadMyLostItems() {
                     <h3>${item.name}</h3>
                     <p><i class="fa-solid fa-location-dot"></i> ${item.location}</p>
                     <div class="date"><i class="fa-regular fa-calendar"></i> Lost: ${item.date_lost}</div>
+                    <button class="btn-primary w-100 mt-3 btn-small" onclick="event.stopPropagation(); findMatches(${item.id})">Find Matches</button>
                 </div>
             `;
             grid.appendChild(card);
@@ -315,6 +333,80 @@ async function loadMyLostItems() {
     }
 }
 
+async function loadMyFoundItems() {
+    const grid = document.getElementById('my-found-items-grid');
+    if (!grid) return;
+    grid.innerHTML = '<div class="loader-spinner"></div>';
+
+    try {
+        const data = await apiCall('/items/my_found');
+        grid.innerHTML = '';
+
+        if (data.length === 0) {
+            grid.innerHTML = '<p style="grid-column:1/-1; text-align:center;">You haven\'t reported any found items yet.</p>';
+            return;
+        }
+
+        data.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            card.style.cursor = 'default';
+
+            const imgSrc = item.image_path ? `http://localhost:8000${item.image_path}` : 'https://via.placeholder.com/300x200?text=No+Image';
+
+            card.innerHTML = `
+                <div class="card-badge status-approved">Found</div>
+                <img src="${imgSrc}" alt="${item.name}">
+                <div class="item-card-content">
+                    <h3>${item.name}</h3>
+                    <p><i class="fa-solid fa-location-dot"></i> ${item.location}</p>
+                    <div class="date"><i class="fa-regular fa-calendar"></i> Reported: ${item.date_found}</div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    } catch (err) {
+        grid.innerHTML = `<p class="color-danger">${err.message}</p>`;
+    }
+}
+
+async function loadGeneralLostItems() {
+    const grid = document.getElementById('general-lost-grid');
+    if (!grid) return;
+    grid.innerHTML = '<div class="loader-spinner"></div>';
+
+    try {
+        const data = await apiCall('/items/lost');
+        grid.innerHTML = '';
+
+        if (data.length === 0) {
+            grid.innerHTML = '<p style="grid-column:1/-1; text-align:center;">No lost items reported yet.</p>';
+            return;
+        }
+
+        data.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            card.style.cursor = 'default';
+
+            const imgSrc = item.image_path ? `http://localhost:8000${item.image_path}` : 'https://via.placeholder.com/300x200?text=No+Image';
+
+            card.innerHTML = `
+                <div class="card-badge status-pending">Lost</div>
+                <img src="${imgSrc}" alt="${item.name}">
+                <div class="item-card-content">
+                    <h3>${item.name}</h3>
+                    <p><i class="fa-solid fa-location-dot"></i> ${item.location}</p>
+                    <div class="date"><i class="fa-regular fa-calendar"></i> Lost: ${item.date_lost}</div>
+                    <p style="font-size:0.8rem; margin-top:5px; color:var(--purple-main)">Reported by: ${item.user}</p>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    } catch (err) {
+        grid.innerHTML = `<p class="color-danger">${err.message}</p>`;
+    }
+}
 async function findMatches(lostItemId) {
     const matchesSection = document.getElementById('matches-section');
     const matchesGrid = document.getElementById('matches-grid');
@@ -378,8 +470,9 @@ async function submitClaim(e) {
         showToast('Claim submitted! Awaiting admin review.', 'success');
         closeModal('claimModal');
         e.target.reset();
-        // Hide matches section to refresh UX
-        document.getElementById('matches-section').style.display = 'none';
+        
+        // Redirect to My Claims page
+        setTimeout(() => showPage('claims'), 1000);
 
     } catch (err) {
         showToast(err.message, 'error');

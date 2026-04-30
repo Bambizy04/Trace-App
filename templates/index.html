@@ -249,19 +249,43 @@
 
     <template id="tpl-search">
       <div class="page-container fade-in">
-        <h2 class="section-title">Find Matches</h2>
-        <p class="subtitle">
-          Select one of your reported lost items to check for intelligent
-          matches.
-        </p>
+        <h2 class="section-title">Search & Matches</h2>
+        
+        <div class="search-tabs">
+          <button class="tab-btn active" onclick="switchSearchTab('my-lost')">My Lost Items</button>
+          <button class="tab-btn" onclick="switchSearchTab('my-found')">My Found Items</button>
+          <button class="tab-btn" onclick="switchSearchTab('general')">All Lost Items</button>
+        </div>
 
-        <div class="my-lost-items-grid" id="lost-items-grid">
-          <!-- Dynamically populated -->
-          <div class="loader-spinner"></div>
+        <div id="tab-my-lost" class="search-tab-content">
+          <h3>My Lost Items</h3>
+          <p class="subtitle" style="text-align:left; margin-bottom:1rem;">Select an item to find intelligent matches.</p>
+          <div class="my-lost-items-grid" id="lost-items-grid">
+            <div class="loader-spinner"></div>
+          </div>
+        </div>
+
+        <div id="tab-my-found" class="search-tab-content" style="display:none">
+          <h3>My Found Items</h3>
+          <p class="subtitle" style="text-align:left; margin-bottom:1rem;">Items you have reported as found.</p>
+          <div class="my-lost-items-grid" id="my-found-items-grid">
+            <div class="loader-spinner"></div>
+          </div>
+        </div>
+
+        <div id="tab-general" class="search-tab-content" style="display:none">
+          <h3>All Lost Items</h3>
+          <p class="subtitle" style="text-align:left; margin-bottom:1rem;">Recently reported lost items by the community.</p>
+          <div class="my-lost-items-grid" id="general-lost-grid">
+            <div class="loader-spinner"></div>
+          </div>
         </div>
 
         <div id="matches-section" class="mt-5" style="display: none">
-          <h3>Potential Matches</h3>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h3>Potential Matches</h3>
+            <button class="btn-outline btn-small" onclick="document.getElementById('matches-section').style.display='none'">Close Matches</button>
+          </div>
           <div class="matches-grid" id="matches-grid">
             <!-- Matches appear here -->
           </div>
@@ -411,6 +435,6 @@
       </form>
     </div>
 
-    <script src="/static/js/app.js?v=2.0"></script>
+    <script src="/static/js/app.js?v=2.3"></script>
   </body>
 </html>

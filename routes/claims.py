@@ -8,7 +8,7 @@ claims_bp = Blueprint('claims', __name__)
 @claims_bp.route('/', methods=['POST'])
 @jwt_required()
 def submit_claim():
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     data = request.get_json()
     
     found_item_id = data.get('found_item_id')
@@ -38,7 +38,7 @@ def submit_claim():
 @claims_bp.route('/my_claims', methods=['GET'])
 @jwt_required()
 def get_my_claims():
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     claims = Claim.query.filter_by(user_id=user_id).all()
     
     result = []

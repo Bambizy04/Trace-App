@@ -83,6 +83,11 @@ p { line-height: 1.6; color: var(--text-secondary); }
     gap: 2rem;
 }
 
+.auth-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
 .nav-links a {
     text-decoration: none;
     color: var(--text-primary);
@@ -307,3 +312,10 @@ main { padding: 2rem 5%; flex-grow: 1; }
 /* Loaders */
 .loader-spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--purple-main); animation: spin 1s linear infinite; margin: 2rem auto; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* Tabs */
+.search-tabs { display: flex; gap: 10px; margin-bottom: 2rem; border-bottom: 1px solid var(--purple-bg); padding-bottom: 10px; }
+.tab-btn { background: none; border: none; padding: 0.5rem 1rem; color: var(--text-secondary); cursor: pointer; border-radius: var(--radius-md); transition: all 0.3s; font-weight: 600; }
+.tab-btn.active { background: var(--purple-main); color: white; }
+.tab-btn:hover:not(.active) { background: var(--purple-bg); color: var(--purple-main); }
+.search-tab-content h3 { margin-bottom: 0.5rem; font-size: 1.5rem; }
