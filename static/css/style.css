@@ -253,7 +253,7 @@ main { padding: 2rem 5%; flex-grow: 1; }
 
 /* Grids and Cards */
 .page-container { max-width: 1000px; margin: 0 auto; }
-.my-lost-items-grid, .matches-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+.my-lost-items-grid, .matches-grid, .my-claims-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
 .item-card {
     background: var(--bg-white); border-radius: var(--radius-lg); overflow: hidden;
     box-shadow: var(--shadow-sm); transition: transform 0.3s ease, box-shadow 0.3s ease;

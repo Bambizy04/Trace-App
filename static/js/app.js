@@ -45,6 +45,7 @@ function showPage(pageId) {
     } else if (pageId === 'claims') {
         if (!checkAuth()) return;
         if (currentRole === 'Admin') { showPage('admin'); return; }
+        loadMyClaims();
     }
 }
 
@@ -382,6 +383,50 @@ async function submitClaim(e) {
 
     } catch (err) {
         showToast(err.message, 'error');
+    }
+}
+
+async function loadMyClaims() {
+    const grid = document.getElementById('my-claims-grid');
+    if (!grid) return;
+    grid.innerHTML = '<div class="loader-spinner"></div>';
+
+    try {
+        const claims = await apiCall('/claims/my_claims');
+        grid.innerHTML = '';
+
+        if (claims.length === 0) {
+            grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">You haven\'t made any claims yet.</p>';
+            return;
+        }
+
+        claims.forEach(c => {
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            // Disable click for now or point to item details if available
+            card.style.cursor = 'default';
+
+            let statusClass = 'status-pending';
+            if (c.status === 'Approved') statusClass = 'status-approved';
+            if (c.status === 'Rejected') statusClass = 'status-rejected';
+
+            card.innerHTML = `
+                <div class="card-badge ${statusClass}">${c.status}</div>
+                <div class="item-card-content">
+                    <h3 style="margin-top:10px">${c.found_item_name}</h3>
+                    <p><strong>Proof provided:</strong> ${c.proof_description}</p>
+                    <div class="date"><i class="fa-regular fa-calendar"></i> Claimed on: ${c.created_at}</div>
+                    ${c.admin_feedback ? `
+                    <div style="margin-top:15px; padding:10px; background:var(--purple-bg); border-radius:var(--radius-md); font-size:0.85rem;">
+                        <strong style="color:var(--purple-dark)">Admin Feedback:</strong><br>
+                        ${c.admin_feedback}
+                    </div>` : ''}
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    } catch (err) {
+        grid.innerHTML = `<p class="color-danger">${err.message}</p>`;
     }
 }
 
