@@ -18,8 +18,12 @@ def create_app(config_class=Config):
     bcrypt.init_app(app)
     jwt.init_app(app)
 
-    # Ensure the upload folder exists
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    # Ensure the upload folder exists (safe for Vercel/read-only environments)
+    try:
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    except OSError:
+        # Ignore if we can't create the directory (common on Vercel)
+        pass
 
     @app.route('/')
     def index():
