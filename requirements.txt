@@ -1,11 +1,11 @@
-# Force cache bust
-flask==3.0.0
-flask-sqlalchemy==3.1.1
-sqlalchemy==2.0.23
-flask-bcrypt==1.0.1
-flask-jwt-extended==4.5.3
-flask-cors==4.0.0
-pymysql==1.1.0
-python-dotenv==1.0.0
-gunicorn==21.2.0
-psycopg2-binary==2.9.9
+# Fresh build - v3.0
+flask
+flask-sqlalchemy
+sqlalchemy
+flask-bcrypt
+flask-jwt-extended
+flask-cors
+pymysql
+python-dotenv
+gunicorn
+psycopg2-binary
