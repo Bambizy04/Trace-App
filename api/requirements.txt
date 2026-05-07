@@ -1,6 +1,6 @@
 flask
-flask-sqlalchemy
-sqlalchemy
+Flask-SQLAlchemy
+SQLAlchemy
 flask-bcrypt
 flask-jwt-extended
 flask-cors
